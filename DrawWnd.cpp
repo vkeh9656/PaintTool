@@ -44,9 +44,29 @@ void DrawWnd::OnLButtonDown(UINT nFlags, CPoint point)
 
 void DrawWnd::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	m_is_clicked = 0;
+	if (m_is_clicked)
+	{
+		if (m_draw_type == LINE_MODE)
+		{
+			CDC* p_image_dc = CDC::FromHandle(m_image.GetDC());
+			
+			p_image_dc->MoveTo(m_prev_point); // 
+			p_image_dc->LineTo(point); // 
+			m_image.ReleaseDC();
+		}
+		else if (m_draw_type == RECT_MODE)
+		{
+			CDC* p_image_dc = CDC::FromHandle(m_image.GetDC());
+			CGdiObject* p_old_brush = p_image_dc->SelectStockObject(NULL_BRUSH);
+			p_image_dc->Rectangle(m_prev_point.x, m_prev_point.y, point.x, point.y);
+			p_image_dc->SelectObject(p_old_brush);
+			m_image.ReleaseDC();
+		}
+		
+		m_is_clicked = 0;
+		ReleaseCapture(); // Mouse 메시지의 선점권을 해지한다.
+	}
 
-	ReleaseCapture(); // Mouse 메시지의 선점권을 해지한다.
 	CWnd::OnLButtonUp(nFlags, point);
 }
 
@@ -56,17 +76,35 @@ void DrawWnd::OnMouseMove(UINT nFlags, CPoint point)
 	if (m_is_clicked)
 	{
 		CClientDC dc(this);
+		if (m_draw_type == PEN_MODE)
+		{
+			HDC h_image_dc = m_image.GetDC();
+			CDC* p_image_dc = CDC::FromHandle(h_image_dc);
 
-		HDC h_image_dc = m_image.GetDC();
-		CDC* p_image_dc = CDC::FromHandle(h_image_dc);
+			p_image_dc->MoveTo(m_prev_point); // 이전 위치 (시작)
+			p_image_dc->LineTo(point); // 마지막 위치 (끝)
 
-		p_image_dc->MoveTo(m_prev_point); // 이전 위치 (시작)
-		p_image_dc->LineTo(point); // 마지막 위치 (끝)
+			m_prev_point = point; // 현재 점을 이전 점으로 업데이트
 
-		m_image.ReleaseDC();
+			m_image.ReleaseDC();
 
-		m_image.Draw(dc, 0, 0);
-		m_prev_point = point;
+			m_image.Draw(dc, 0, 0);
+		}
+		else if (m_draw_type == LINE_MODE)
+		{
+			// 잔상 제거를 위해 리셋 + 직접 dc를 사용해서 그림 그려줌
+			m_image.Draw(dc, 0, 0);
+
+			dc.MoveTo(m_prev_point); // 이전 위치 (시작)
+			dc.LineTo(point); // 마지막 위치 (끝)
+		}
+		else if (m_draw_type == RECT_MODE)
+		{
+			m_image.Draw(dc, 0, 0);
+			CGdiObject *p_old_brush = dc.SelectStockObject(NULL_BRUSH);
+			dc.Rectangle(m_prev_point.x, m_prev_point.y, point.x, point.y);
+			dc.SelectObject(p_old_brush);
+		}
 	}
 
 	CWnd::OnMouseMove(nFlags, point);

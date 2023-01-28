@@ -26,11 +26,17 @@ CPaintToolDlg::CPaintToolDlg(CWnd* pParent /*=nullptr*/)
 void CPaintToolDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_PEN_RADIO, m_pen_radio);
+	DDX_Control(pDX, IDC_LINE_RADIO, m_line_radio);
+	DDX_Control(pDX, IDC_RECT_RADIO, m_rect_radio);
 }
 
 BEGIN_MESSAGE_MAP(CPaintToolDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_PEN_RADIO, &CPaintToolDlg::OnBnClickedPenRadio)
+	ON_BN_CLICKED(IDC_LINE_RADIO, &CPaintToolDlg::OnBnClickedLineRadio)
+	ON_BN_CLICKED(IDC_RECT_RADIO, &CPaintToolDlg::OnBnClickedRectRadio)
 END_MESSAGE_MAP()
 
 
@@ -44,6 +50,8 @@ BOOL CPaintToolDlg::OnInitDialog()
 	//  프레임워크가 이 작업을 자동으로 수행합니다.
 	SetIcon(m_hIcon, TRUE);			// 큰 아이콘을 설정합니다.
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
+
+	m_pen_radio.SetCheck(1); // 연필 그리기가 선택된 상태로 시작
 
 	CRect r;
 	GetDlgItem(IDC_DRAW_RECT)->GetWindowRect(r);
@@ -90,4 +98,17 @@ HCURSOR CPaintToolDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CPaintToolDlg::OnBnClickedPenRadio()
+{
+	m_draw_wnd.SetDrawType(PEN_MODE);
+}
 
+void CPaintToolDlg::OnBnClickedLineRadio()
+{
+	m_draw_wnd.SetDrawType(LINE_MODE);
+}
+
+void CPaintToolDlg::OnBnClickedRectRadio()
+{
+	m_draw_wnd.SetDrawType(RECT_MODE);
+}

@@ -1,5 +1,8 @@
 #pragma once
 
+#define PEN_MODE	1
+#define LINE_MODE	2
+#define RECT_MODE	3
 
 // DrawWnd
 
@@ -11,9 +14,16 @@ private:
 	CPoint m_prev_point;
 	CImage m_image; // MemoryDC 용
 
+	char m_draw_type = 1; // 1-> 연필, 2-> 선, 3-> 사각형
+
 public:
 	DrawWnd();
 	virtual ~DrawWnd();
+
+	void SetDrawType(char a_type)
+	{
+		m_draw_type = a_type;
+	}
 
 protected:
 	DECLARE_MESSAGE_MAP()
