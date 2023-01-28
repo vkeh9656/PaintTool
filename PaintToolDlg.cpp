@@ -31,9 +31,6 @@ void CPaintToolDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CPaintToolDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_LBUTTONUP()
-	ON_WM_MOUSEMOVE()
 END_MESSAGE_MAP()
 
 
@@ -48,7 +45,11 @@ BOOL CPaintToolDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 큰 아이콘을 설정합니다.
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
-	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+	CRect r;
+	GetDlgItem(IDC_DRAW_RECT)->GetWindowRect(r);
+	ScreenToClient(r);
+
+	m_draw_wnd.Create(NULL, NULL, WS_CHILD | WS_VISIBLE | WS_BORDER, r, this, 25000);
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -90,34 +91,3 @@ HCURSOR CPaintToolDlg::OnQueryDragIcon()
 }
 
 
-
-void CPaintToolDlg::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	m_is_clicked = 1;
-	m_prev_point = point;
-
-	CDialogEx::OnLButtonDown(nFlags, point);
-}
-
-
-void CPaintToolDlg::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	m_is_clicked = 0;
-
-	CDialogEx::OnLButtonUp(nFlags, point);
-}
-
-
-void CPaintToolDlg::OnMouseMove(UINT nFlags, CPoint point)
-{
-	if (m_is_clicked)
-	{
-		CClientDC dc(this);
-		dc.MoveTo(m_prev_point); // 이전 위치 (시작)
-		dc.LineTo(point); // 마지막 위치 (끝)
-
-		m_prev_point = point;
-	}
-
-	CDialogEx::OnMouseMove(nFlags, point);
-}

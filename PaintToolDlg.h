@@ -3,14 +3,15 @@
 //
 
 #pragma once
-
+#include "DrawWnd.h"
 
 // CPaintToolDlg 대화 상자
 class CPaintToolDlg : public CDialogEx
 {
 private:
-	char m_is_clicked = 0;
-	CPoint m_prev_point;
+	DrawWnd m_draw_wnd;
+
+
 // 생성입니다.
 public:
 	CPaintToolDlg(CWnd* pParent = nullptr);	// 표준 생성자입니다.
@@ -33,8 +34,4 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
-public:
-	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
-	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
-	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 };
