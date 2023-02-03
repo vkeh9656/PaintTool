@@ -49,21 +49,13 @@ void DrawWnd::OnLButtonUp(UINT nFlags, CPoint point)
 	{
 		if (m_draw_type == LINE_MODE)
 		{
-			
-			CPen* p_old_pen = m_image_dc.SelectObject(&m_my_pen);
 			m_image_dc.MoveTo(m_prev_point); // 
 			m_image_dc.LineTo(point); // 
-			m_image_dc.SelectObject(p_old_pen);
 		}
+		
 		else if (m_draw_type == RECT_MODE)
 		{
-			
-			CPen* p_old_pen = m_image_dc.SelectObject(&m_my_pen);
-			CGdiObject* p_old_brush = m_image_dc.SelectStockObject(NULL_BRUSH);
-			m_image_dc.Rectangle(m_prev_point.x, m_prev_point.y, point.x, point.y);
-			m_image_dc.SelectObject(p_old_brush);
-			m_image_dc.SelectObject(p_old_pen);
-			
+			m_image_dc.Rectangle(m_prev_point.x, m_prev_point.y, point.x, point.y);	
 		}
 		
 		m_is_clicked = 0;
@@ -102,9 +94,7 @@ void DrawWnd::OnMouseMove(UINT nFlags, CPoint point)
 		{
 			m_image.Draw(m_temp_dc, 0, 0);
 
-			CGdiObject *p_old_brush = m_temp_dc.SelectStockObject(NULL_BRUSH);
 			m_temp_dc.Rectangle(m_prev_point.x, m_prev_point.y, point.x, point.y);
-			m_temp_dc.SelectObject(p_old_brush);
 
 			m_temp_image.Draw(dc, 0, 0);
 		}
@@ -128,10 +118,14 @@ int DrawWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	m_image_dc.Attach(m_image.GetDC()); // 임시객체로 생성되는 CDC::FromHandle 대신, Attach로 아예 붙여버려서 안정성을 높일 수 있음.
 	m_image_dc.FillSolidRect(r, RGB(255,255,255));
+
 	m_image_dc.SelectObject(&m_my_pen);
+	m_image_dc.SelectStockObject(NULL_BRUSH);
 
 	m_temp_dc.Attach(m_temp_image.GetDC());
 	m_temp_dc.SelectObject(&m_my_pen);
+	m_temp_dc.SelectStockObject(NULL_BRUSH);
+
 	return 0;
 }
 

@@ -31,6 +31,9 @@ public:
 	{
 		m_my_pen.DeleteObject();	// 기존 펜은 지우고
 		m_my_pen.CreatePen(PS_SOLID, 1, a_color);	// 새로 생성
+
+		m_image_dc.SelectObject(&m_my_pen);
+		m_temp_dc.SelectObject(&m_my_pen);
 	}
 
 
