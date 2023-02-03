@@ -37,6 +37,7 @@ BEGIN_MESSAGE_MAP(CPaintToolDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_PEN_RADIO, &CPaintToolDlg::OnBnClickedPenRadio)
 	ON_BN_CLICKED(IDC_LINE_RADIO, &CPaintToolDlg::OnBnClickedLineRadio)
 	ON_BN_CLICKED(IDC_RECT_RADIO, &CPaintToolDlg::OnBnClickedRectRadio)
+	ON_LBN_SELCHANGE(IDC_COLOR_LIST, &CPaintToolDlg::OnLbnSelchangeColorList)
 END_MESSAGE_MAP()
 
 
@@ -58,6 +59,29 @@ BOOL CPaintToolDlg::OnInitDialog()
 	ScreenToClient(r);
 
 	m_draw_wnd.Create(NULL, NULL, WS_CHILD | WS_VISIBLE | WS_BORDER, r, this, 25000);
+
+	// 표준 20가지 색상 목록
+	COLORREF color_table[20] = {
+		RGB(0,0,0), RGB(0,0,255), RGB(0,255,0), RGB(0,255,255), RGB(255,0,0),
+		RGB(255,0,255), RGB(255,255,0), RGB(255,255,255), RGB(0,0,128),
+		RGB(0,128,0), RGB(0,128,128), RGB(128,0,0), RGB(128,0,128),
+		RGB(128,128,0), RGB(128,128,128), RGB(192,192,192), RGB(192,220,192),
+		RGB(166,202,240), RGB(255,251,240), RGB(160,160,164)
+	};
+
+
+	m_color_list.SubclassDlgItem(IDC_COLOR_LIST, this);
+	m_color_list.SetColumnWidth(25);	// ListBox 항목의 폭을 25로 설정
+	m_color_list.SetItemHeight(0, 25);	// ListBox 항목의 높이를 25로 설정
+
+	
+	for (int i = 0; i < 20; i++)
+	{
+		m_color_list.InsertString(i, L"");
+		m_color_list.SetItemData(i, color_table[i]);
+	}
+
+	m_color_list.SetCurSel(0);
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -111,4 +135,14 @@ void CPaintToolDlg::OnBnClickedLineRadio()
 void CPaintToolDlg::OnBnClickedRectRadio()
 {
 	m_draw_wnd.SetDrawType(RECT_MODE);
+}
+
+
+void CPaintToolDlg::OnLbnSelchangeColorList()
+{
+	int index = m_color_list.GetCurSel();
+	if (LB_ERR != index) // 안전 코드
+	{
+		m_draw_wnd.SetPenStyle(m_color_list.GetItemData(index));
+	}
 }

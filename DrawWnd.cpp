@@ -10,7 +10,7 @@
 
 IMPLEMENT_DYNAMIC(DrawWnd, CWnd)
 
-DrawWnd::DrawWnd()
+DrawWnd::DrawWnd() : m_my_pen(PS_SOLID, 1, RGB(0, 0, 0))
 {
 
 }
@@ -26,6 +26,7 @@ BEGIN_MESSAGE_MAP(DrawWnd, CWnd)
 	ON_WM_MOUSEMOVE()
 	ON_WM_CREATE()
 	ON_WM_PAINT()
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 
@@ -81,8 +82,10 @@ void DrawWnd::OnMouseMove(UINT nFlags, CPoint point)
 			HDC h_image_dc = m_image.GetDC();
 			CDC* p_image_dc = CDC::FromHandle(h_image_dc);
 
+			CPen* p_old_pen = p_image_dc->SelectObject(&m_my_pen);
 			p_image_dc->MoveTo(m_prev_point); // 이전 위치 (시작)
 			p_image_dc->LineTo(point); // 마지막 위치 (끝)
+			p_image_dc->SelectObject(p_old_pen);
 
 			m_prev_point = point; // 현재 점을 이전 점으로 업데이트
 
@@ -143,4 +146,12 @@ void DrawWnd::OnPaint()
 	CPaintDC dc(this); // device context for painting
 	
 	m_image.Draw(dc, 0, 0);
+}
+
+
+void DrawWnd::OnDestroy()
+{
+	CWnd::OnDestroy();
+
+	m_my_pen.DeleteObject();
 }

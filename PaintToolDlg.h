@@ -3,14 +3,36 @@
 //
 
 #pragma once
+
+#include "SJ_ListBox.h"
 #include "DrawWnd.h"
+
+
+#pragma comment (lib, "SJ_ListBox.lib")
+
+class MyColorList : public SJ_ListBox
+{
+public:
+	void DrawUserItem(CDC* ap_dc, RECT* ap_rect, int a_index, void* ap_data,
+		unsigned char a_select_flag, unsigned char a_focus_flag)
+	{
+		COLORREF color = GetItemData(a_index);
+		CRect r(ap_rect->left + 2, ap_rect->top + 2, ap_rect->right - 2, ap_rect->bottom - 2);
+
+		ap_dc->FillSolidRect(r, color);
+	}
+};
+
+
+
+
 
 // CPaintToolDlg 대화 상자
 class CPaintToolDlg : public CDialogEx
 {
 private:
 	DrawWnd m_draw_wnd;
-
+	MyColorList m_color_list;
 
 // 생성입니다.
 public:
@@ -41,4 +63,5 @@ public:
 	afx_msg void OnBnClickedPenRadio();
 	afx_msg void OnBnClickedLineRadio();
 	afx_msg void OnBnClickedRectRadio();
+	afx_msg void OnLbnSelchangeColorList();
 };

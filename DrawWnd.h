@@ -15,6 +15,7 @@ private:
 	CImage m_image, m_temp_image; // MemoryDC 용
 
 	char m_draw_type = 1; // 1-> 연필, 2-> 선, 3-> 사각형
+	CPen m_my_pen;
 
 public:
 	DrawWnd();
@@ -25,6 +26,14 @@ public:
 		m_draw_type = a_type;
 	}
 
+	void SetPenStyle(COLORREF a_color)
+	{
+		m_my_pen.DeleteObject();	// 기존 펜은 지우고
+		m_my_pen.CreatePen(PS_SOLID, 1, a_color);	// 새로 생성
+	}
+
+
+
 protected:
 	DECLARE_MESSAGE_MAP()
 
@@ -34,6 +43,7 @@ public:
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnPaint();
+	afx_msg void OnDestroy();
 };
 
 
