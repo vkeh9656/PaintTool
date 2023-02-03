@@ -95,11 +95,13 @@ void DrawWnd::OnMouseMove(UINT nFlags, CPoint point)
 		}
 		else if (m_draw_type == LINE_MODE)
 		{
-			// 잔상 제거를 위해 리셋 + 직접 dc를 사용해서 그림 그려줌
-			m_image.Draw(dc, 0, 0);
+			CDC* p_temp_dc = CDC::FromHandle(m_temp_image.GetDC());
+			m_image.Draw(*p_temp_dc, 0, 0);
 
-			dc.MoveTo(m_prev_point); // 이전 위치 (시작)
-			dc.LineTo(point); // 마지막 위치 (끝)
+			p_temp_dc->MoveTo(m_prev_point); // 이전 위치 (시작)
+			p_temp_dc->LineTo(point); // 마지막 위치 (끝)
+			m_temp_image.ReleaseDC();
+			m_temp_image.Draw(dc, 0, 0);
 		}
 		else if (m_draw_type == RECT_MODE)
 		{
