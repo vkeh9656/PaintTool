@@ -12,7 +12,7 @@ class DrawWnd : public CWnd
 private:
 	char m_is_clicked = 0;
 	CPoint m_prev_point;
-	CImage m_image; // MemoryDC 용
+	CImage m_image, m_temp_image; // MemoryDC 용
 
 	char m_draw_type = 1; // 1-> 연필, 2-> 선, 3-> 사각형
 

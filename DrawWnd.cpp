@@ -100,10 +100,16 @@ void DrawWnd::OnMouseMove(UINT nFlags, CPoint point)
 		}
 		else if (m_draw_type == RECT_MODE)
 		{
-			m_image.Draw(dc, 0, 0);
-			CGdiObject *p_old_brush = dc.SelectStockObject(NULL_BRUSH);
-			dc.Rectangle(m_prev_point.x, m_prev_point.y, point.x, point.y);
-			dc.SelectObject(p_old_brush);
+			CDC* p_temp_dc = CDC::FromHandle(m_temp_image.GetDC());
+
+			m_image.Draw(*p_temp_dc, 0, 0);
+
+			CGdiObject *p_old_brush = p_temp_dc->SelectStockObject(NULL_BRUSH);
+			p_temp_dc->Rectangle(m_prev_point.x, m_prev_point.y, point.x, point.y);
+			p_temp_dc->SelectObject(p_old_brush);
+
+			m_temp_image.ReleaseDC();
+			m_temp_image.Draw(dc, 0, 0);
 		}
 	}
 
@@ -121,7 +127,8 @@ int DrawWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	GetClientRect(r);
 
 	m_image.Create(r.Width(), r.Height(), 32);
-	
+	m_temp_image.Create(r.Width(), r.Height(), 32);
+
 	HDC h_image_dc = m_image.GetDC();
 	CDC* p_image_dc = CDC::FromHandle(h_image_dc);
 	p_image_dc->Rectangle(r);
