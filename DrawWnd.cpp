@@ -49,22 +49,21 @@ void DrawWnd::OnLButtonUp(UINT nFlags, CPoint point)
 	{
 		if (m_draw_type == LINE_MODE)
 		{
-			CDC* p_image_dc = CDC::FromHandle(m_image.GetDC());
-			CPen* p_old_pen = p_image_dc->SelectObject(&m_my_pen);
-			p_image_dc->MoveTo(m_prev_point); // 
-			p_image_dc->LineTo(point); // 
-			p_image_dc->SelectObject(p_old_pen);
-			m_image.ReleaseDC();
+			
+			CPen* p_old_pen = m_image_dc.SelectObject(&m_my_pen);
+			m_image_dc.MoveTo(m_prev_point); // 
+			m_image_dc.LineTo(point); // 
+			m_image_dc.SelectObject(p_old_pen);
 		}
 		else if (m_draw_type == RECT_MODE)
 		{
-			CDC* p_image_dc = CDC::FromHandle(m_image.GetDC());
-			CPen* p_old_pen = p_image_dc->SelectObject(&m_my_pen);
-			CGdiObject* p_old_brush = p_image_dc->SelectStockObject(NULL_BRUSH);
-			p_image_dc->Rectangle(m_prev_point.x, m_prev_point.y, point.x, point.y);
-			p_image_dc->SelectObject(p_old_brush);
-			p_image_dc->SelectObject(p_old_pen);
-			m_image.ReleaseDC();
+			
+			CPen* p_old_pen = m_image_dc.SelectObject(&m_my_pen);
+			CGdiObject* p_old_brush = m_image_dc.SelectStockObject(NULL_BRUSH);
+			m_image_dc.Rectangle(m_prev_point.x, m_prev_point.y, point.x, point.y);
+			m_image_dc.SelectObject(p_old_brush);
+			m_image_dc.SelectObject(p_old_pen);
+			
 		}
 		
 		m_is_clicked = 0;
@@ -82,45 +81,37 @@ void DrawWnd::OnMouseMove(UINT nFlags, CPoint point)
 		CClientDC dc(this);
 		if (m_draw_type == PEN_MODE)
 		{
-			HDC h_image_dc = m_image.GetDC();
-			CDC* p_image_dc = CDC::FromHandle(h_image_dc);
-
-			CPen* p_old_pen = p_image_dc->SelectObject(&m_my_pen);
-			p_image_dc->MoveTo(m_prev_point); // 이전 위치 (시작)
-			p_image_dc->LineTo(point); // 마지막 위치 (끝)
-			p_image_dc->SelectObject(p_old_pen);
+			CPen* p_old_pen = m_image_dc.SelectObject(&m_my_pen);
+			m_image_dc.MoveTo(m_prev_point); // 이전 위치 (시작)
+			m_image_dc.LineTo(point); // 마지막 위치 (끝)
+			m_image_dc.SelectObject(p_old_pen);
 
 			m_prev_point = point; // 현재 점을 이전 점으로 업데이트
-
-			m_image.ReleaseDC();
-
 			m_image.Draw(dc, 0, 0);
 		}
+
 		else if (m_draw_type == LINE_MODE)
 		{
-			CDC* p_temp_dc = CDC::FromHandle(m_temp_image.GetDC());
-			m_image.Draw(*p_temp_dc, 0, 0);
+			m_image.Draw(m_temp_dc, 0, 0);
 
-			CPen* p_old_pen = p_temp_dc->SelectObject(&m_my_pen);
-			p_temp_dc->MoveTo(m_prev_point); // 이전 위치 (시작)
-			p_temp_dc->LineTo(point); // 마지막 위치 (끝)
-			p_temp_dc->SelectObject(p_old_pen);
-			m_temp_image.ReleaseDC();
+			CPen* p_old_pen = m_temp_dc.SelectObject(&m_my_pen);
+			m_temp_dc.MoveTo(m_prev_point); // 이전 위치 (시작)
+			m_temp_dc.LineTo(point); // 마지막 위치 (끝)
+			m_temp_dc.SelectObject(p_old_pen);
+
 			m_temp_image.Draw(dc, 0, 0);
 		}
+
 		else if (m_draw_type == RECT_MODE)
 		{
-			CDC* p_temp_dc = CDC::FromHandle(m_temp_image.GetDC());
+			m_image.Draw(m_temp_dc, 0, 0);
 
-			m_image.Draw(*p_temp_dc, 0, 0);
+			CPen* p_old_pen = m_temp_dc.SelectObject(&m_my_pen);
+			CGdiObject *p_old_brush = m_temp_dc.SelectStockObject(NULL_BRUSH);
+			m_temp_dc.Rectangle(m_prev_point.x, m_prev_point.y, point.x, point.y);
+			m_temp_dc.SelectObject(p_old_brush);
+			m_temp_dc.SelectObject(p_old_pen);
 
-			CPen* p_old_pen = p_temp_dc->SelectObject(&m_my_pen);
-			CGdiObject *p_old_brush = p_temp_dc->SelectStockObject(NULL_BRUSH);
-			p_temp_dc->Rectangle(m_prev_point.x, m_prev_point.y, point.x, point.y);
-			p_temp_dc->SelectObject(p_old_brush);
-			p_temp_dc->SelectObject(p_old_pen);
-
-			m_temp_image.ReleaseDC();
 			m_temp_image.Draw(dc, 0, 0);
 		}
 	}
@@ -141,11 +132,10 @@ int DrawWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_image.Create(r.Width(), r.Height(), 32);
 	m_temp_image.Create(r.Width(), r.Height(), 32);
 
-	HDC h_image_dc = m_image.GetDC();
-	CDC* p_image_dc = CDC::FromHandle(h_image_dc);
-	p_image_dc->Rectangle(r);
-	m_image.ReleaseDC();
+	m_image_dc.Attach(m_image.GetDC()); // 임시객체로 생성되는 CDC::FromHandle 대신, Attach로 아예 붙여버려서 안정성을 높일 수 있음.
+	m_image_dc.FillSolidRect(r, RGB(255,255,255));
 
+	m_temp_dc.Attach(m_temp_image.GetDC());
 	return 0;
 }
 
@@ -161,6 +151,12 @@ void DrawWnd::OnPaint()
 void DrawWnd::OnDestroy()
 {
 	CWnd::OnDestroy();
+
+	m_image_dc.Detach();
+	m_image.ReleaseDC();
+
+	m_temp_dc.Detach();
+	m_temp_image.ReleaseDC();
 
 	m_my_pen.DeleteObject();
 }
