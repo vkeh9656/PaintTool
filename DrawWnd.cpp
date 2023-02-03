@@ -50,17 +50,20 @@ void DrawWnd::OnLButtonUp(UINT nFlags, CPoint point)
 		if (m_draw_type == LINE_MODE)
 		{
 			CDC* p_image_dc = CDC::FromHandle(m_image.GetDC());
-			
+			CPen* p_old_pen = p_image_dc->SelectObject(&m_my_pen);
 			p_image_dc->MoveTo(m_prev_point); // 
 			p_image_dc->LineTo(point); // 
+			p_image_dc->SelectObject(p_old_pen);
 			m_image.ReleaseDC();
 		}
 		else if (m_draw_type == RECT_MODE)
 		{
 			CDC* p_image_dc = CDC::FromHandle(m_image.GetDC());
+			CPen* p_old_pen = p_image_dc->SelectObject(&m_my_pen);
 			CGdiObject* p_old_brush = p_image_dc->SelectStockObject(NULL_BRUSH);
 			p_image_dc->Rectangle(m_prev_point.x, m_prev_point.y, point.x, point.y);
 			p_image_dc->SelectObject(p_old_brush);
+			p_image_dc->SelectObject(p_old_pen);
 			m_image.ReleaseDC();
 		}
 		
@@ -98,8 +101,10 @@ void DrawWnd::OnMouseMove(UINT nFlags, CPoint point)
 			CDC* p_temp_dc = CDC::FromHandle(m_temp_image.GetDC());
 			m_image.Draw(*p_temp_dc, 0, 0);
 
+			CPen* p_old_pen = p_temp_dc->SelectObject(&m_my_pen);
 			p_temp_dc->MoveTo(m_prev_point); // 이전 위치 (시작)
 			p_temp_dc->LineTo(point); // 마지막 위치 (끝)
+			p_temp_dc->SelectObject(p_old_pen);
 			m_temp_image.ReleaseDC();
 			m_temp_image.Draw(dc, 0, 0);
 		}
@@ -109,9 +114,11 @@ void DrawWnd::OnMouseMove(UINT nFlags, CPoint point)
 
 			m_image.Draw(*p_temp_dc, 0, 0);
 
+			CPen* p_old_pen = p_temp_dc->SelectObject(&m_my_pen);
 			CGdiObject *p_old_brush = p_temp_dc->SelectStockObject(NULL_BRUSH);
 			p_temp_dc->Rectangle(m_prev_point.x, m_prev_point.y, point.x, point.y);
 			p_temp_dc->SelectObject(p_old_brush);
+			p_temp_dc->SelectObject(p_old_pen);
 
 			m_temp_image.ReleaseDC();
 			m_temp_image.Draw(dc, 0, 0);
